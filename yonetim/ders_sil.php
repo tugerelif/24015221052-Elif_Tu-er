@@ -1,26 +1,24 @@
 <?php
 session_start();
-require_once '../includes/veritabani.php'; 
+require_once '../includes/veritabani.php';
 
-if (!isset($_SESSION['kullanici_id']) || $_SESSION['rol'] !== 'admin' || !isset($_GET['id'])) {
-    header("Location: dersler.php"); 
+// Yetki Kontrolü: Sadece admin ve egitmen silebilir
+if (!isset($_SESSION['kullanici_id']) || !in_array($_SESSION['rol'], ['admin', 'egitmen'])) {
+    header("Location: ../index.php");
     exit();
 }
 
-$ders_id = $_GET['id'];
-
-$sql = "DELETE FROM dersler WHERE id = ?";
-
-try {
-    $stmt = $db->prepare($sql);
-
-    $stmt->execute([$ders_id]);
-
-    header("Location: dersler.php?silindi=basarili");
-    exit();
-    
-} catch (PDOException $e) {
-    header("Location: dersler.php?silindi=hata");
-    exit();
+if (isset($_GET['id'])) {
+    $id = $_GET['id'];
+    try {
+        $sql = "DELETE FROM dersler WHERE id = ?";
+        $stmt = $db->prepare($sql);
+        $stmt->execute([$id]);
+        header("Location: dersler.php?durum=silindi");
+    } catch (PDOException $e) {
+        header("Location: dersler.php?durum=hata");
+    }
+} else {
+    header("Location: dersler.php");
 }
-?>
+exit();
